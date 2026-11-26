@@ -1,13 +1,13 @@
 <?php
 /**
- * Plugin Name:       Witchfire
- * Description:       Example block scaffolded with Create Block tool.
+ * Plugin Name:       WitchFire
+ * Description:       a wordpress block editor plugin for syntax highlighting code via Lumis
  * Version:           0.1.0
  * Requires at least: 6.8
  * Requires PHP:      7.4
- * Author:            The WordPress Contributors
- * License:           GPL-2.0-or-later
- * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Author:            Alex Barber
+ * License:           GPL-3.0-or-later
+ * License URI:       https://www.gnu.org/licenses/gpl-3.0.html
  * Text Domain:       witchfire
  *
  * @package Reidrun
