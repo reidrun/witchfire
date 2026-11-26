@@ -3,17 +3,43 @@
 	"apiVersion": 3,
 	"name": "reidrun/witchfire",
 	"version": "0.1.0",
-	"title": "Witchfire",
-	"category": "widgets",
-	"icon": "smiley",
-	"description": "Example block scaffolded with Create Block tool.",
+	"title": "WitchFire",
+	"category": "text",
+	"icon": "editor-code",
+	"description": "a syntax highlighted code block",
+	"attributes": {
+		"code": { "type": "string", "default": "" },
+		"language": { "type":  "string", "default": "" }
+	},
 	"example": {},
 	"supports": {
-		"html": false
+		"align": ["wide", "full"],
+		"anchor": true,
+		"html": false,
+		"color": {
+			"text": true,
+			"background": true,
+			"gradients": true
+		},
+		"spacing": {
+			"margin": ["top", "bottom"],
+			"padding": true
+		},
+		"typography": {
+			"fontSize": true,
+			"lineHeight": true,
+			"fontFamily": true
+		},
+		"border": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true
+		},
+		"shadow": true
 	},
 	"textdomain": "witchfire",
 	"editorScript": "file:./index.js",
 	"editorStyle": "file:./index.css",
-	"style": "file:./style-index.css",
-	"viewScript": "file:./view.js"
+	"style": "file:./style-index.css"
 }
