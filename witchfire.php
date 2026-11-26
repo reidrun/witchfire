@@ -66,7 +66,7 @@ function reidrun_witchfire_get_languages(): array {
 	return $sources
 		|> ( fn( array $s ): array => array_filter(
 			$s,
-			fn( array $source ): bool => is_dir( $source['dir'] )
+			fn( array $source ): bool => is_dir( $source['path'] )
 		) )
 		|> ( fn( array $s ): array => array_map(
 			reidrun_witchfire_scan_wasm_source( ... ),
