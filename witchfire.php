@@ -12,6 +12,7 @@
  *
  * @package Reidrun
  */
+declare(strict_types=1);
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -24,7 +25,19 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @see https://make.wordpress.org/core/2025/03/13/more-efficient-block-type-registration-in-6-8/
  * @see https://make.wordpress.org/core/2024/10/17/new-block-type-registration-apis-to-improve-performance-in-wordpress-6-7/
  */
-function reidrun_witchfire_block_init() {
+function reidrun_witchfire_block_init(): void {
 	wp_register_block_types_from_metadata_collection( __DIR__ . '/build', __DIR__ . '/build/blocks-manifest.php' );
 }
 add_action( 'init', 'reidrun_witchfire_block_init' );
+
+function reidrun_witchfire_enqueue_block_editor_assets(): void {
+	wp_add_inline_script(
+		'reidrun-witchfire-editor-script',
+		'window.witchfireCOnfig = ' . wp_json_encode( [
+			'wasmBaseUrl' => plugins_url( 'build/wasm/', __FILE__ ),
+			'customGrammars' => get_option( 'witchfire_custom_grammars', [] ),
+		] ) . ';',
+		'before'
+	);
+}
+add_action( 'enqueue_block_editor_assets', 'reidrun_witchfire_enqueue_block_editor_assets' );
