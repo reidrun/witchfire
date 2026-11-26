@@ -8,8 +8,20 @@
 	"icon": "editor-code",
 	"description": "a syntax highlighted code block",
 	"attributes": {
-		"code": { "type": "string", "default": "" },
-		"language": { "type":  "string", "default": "" }
+		"code": {
+			"type": "string",
+			"default": ""
+		},
+		"language": {
+			"type": "string",
+			"default": ""
+		},
+		"highlighted": {
+			"type": "string",
+			"source": "html",
+			"selector": ".wp-block-reidrun-witchfire",
+			"default": ""
+		}
 	},
 	"example": {},
 	"supports": {

@@ -15,10 +15,11 @@ import { useBlockProps } from '@wordpress/block-editor';
  *
  * @return {Element} Element to render.
  */
-export default function save() {
+export default function save({ attributes: { highlighted } }) {
 	return (
-		<p { ...useBlockProps.save() }>
-			{ 'Witchfire – hello from the saved content!' }
-		</p>
+		<div
+			{ ...useBlockProps.save() }
+			dangerouslySetInnerHTML={ { __html: highlighted } }
+		/>
 	);
 }
