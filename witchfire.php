@@ -4,7 +4,7 @@
  * Description:       a wordpress block editor plugin for syntax highlighting code via Lumis
  * Version:           0.1.0
  * Requires at least: 6.8
- * Requires PHP:      7.4
+ * Requires PHP:      8.5
  * Author:            Alex Barber
  * License:           GPL-3.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-3.0.html
@@ -12,7 +12,7 @@
  *
  * @package Reidrun
  */
-declare(strict_types=1);
+declare( strict_types = 1 );
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -30,12 +30,57 @@ function reidrun_witchfire_block_init(): void {
 }
 add_action( 'init', 'reidrun_witchfire_block_init' );
 
+function reidrun_witchfire_scan_wasm_source( array $source ): array {
+	return ( glob( $source['dir'] . '/*.wasm' ) ?: [] )
+		|> ( fn( array $files ): array => array_map( basename( ... ), $files ) )
+		|> ( fn( array $names ): array => array_filter(
+			$names,
+			fn( string $name ) => $name !== 'web-tree-sitter.wasm'
+		) )
+		|> ( fn( array $names ): array => array_combine(
+			array_map(
+				fn( string $name ): string => preg_replace(
+					'/^(?:tree-sitter-)?(.+)\.wasm$/',
+					'$1',
+					$name
+				),
+				$names
+			),
+			array_map( fn( string $name ): string => $source['url'] . '/' . $name, $names )
+		) );
+}
+
+function reidrun_witchfire_get_languages(): array {
+	$uploads = wp_upload_dir();
+	$sources = [
+		[
+			'path' => plugin_dir_path( __FILE__ ) . 'build/wasm',
+			'url' => plugin_dir_url( __FILE__ ) . 'build/wasm'
+		],
+		[
+			'path' => $uploads['basedir'] . '/witchfire/wasm',
+			'url' => $uploads['baseurl'] . '/witchfire/wasm'
+		]
+	];
+
+	return $sources
+		|> ( fn( array $s ): array => array_filter(
+			$s,
+			fn( array $source ): bool => is_dir( $source['dir'] )
+		) )
+		|> ( fn( array $s ): array => array_map(
+			reidrun_witchfire_scan_wasm_source( ... ),
+			$s
+		) )
+		|> ( fn( array $maps ): array => array_merge( ...$maps ) );
+}
+
 function reidrun_witchfire_enqueue_block_editor_assets(): void {
 	wp_add_inline_script(
 		'reidrun-witchfire-editor-script',
 		'window.witchfireConfig = ' . wp_json_encode( [
-			'wasmBaseUrl' => plugins_url( 'build/wasm/', __FILE__ ),
-			'customGrammars' => get_option( 'witchfire_custom_grammars', [] ),
+			'runtimeWasmUrl' => plugin_dir_url( __FILE__ ) . 'build/wasm/web-tree-sitter.wasm',
+			'languages' => reidrun_witchfire_get_languages()
 		] ) . ';',
 		'before'
 	);
