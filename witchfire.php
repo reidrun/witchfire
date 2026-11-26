@@ -33,7 +33,7 @@ add_action( 'init', 'reidrun_witchfire_block_init' );
 function reidrun_witchfire_enqueue_block_editor_assets(): void {
 	wp_add_inline_script(
 		'reidrun-witchfire-editor-script',
-		'window.witchfireCOnfig = ' . wp_json_encode( [
+		'window.witchfireConfig = ' . wp_json_encode( [
 			'wasmBaseUrl' => plugins_url( 'build/wasm/', __FILE__ ),
 			'customGrammars' => get_option( 'witchfire_custom_grammars', [] ),
 		] ) . ';',
