@@ -24,8 +24,6 @@ const Edit = ( {
 	const [ isHighlighting, setIsHighlighting ] = useState( false );
 	const [ highlightError, setHighlightError ] = useState( null );
 
-	const blockProps = useBlockProps()
-
 	const { lockPostSaving, unlockPostSaving } = useDispatch( 'core/editor' ) ?? {};
 	const { __unstableMarkNextChangeAsNotPersistent } = useDispatch( 'core/block-editor' ) ?? {};
 
@@ -110,6 +108,16 @@ const Edit = ( {
 			</BlockControls>
 			<InspectorControls>
 				<PanelBody title={ __( 'Witchfire Settings', 'witchfire' ) }>
+					{ isHighlightedCodeDirty && (
+						<Notice status="warning" isDismissible={ false }>
+							{ __( 'Saving is temporarily blocked. Code has been updated in a WitchFire code block, but highlighted code has not been updated. Click "Update Highlighting" to apply changes.', 'witchfire' ) }
+						</Notice>
+					) }
+					{ highlightError && (
+						<Notice status="error" isDismissible={ false }>
+							{ __( 'WitchFire syntax highlighting failed. Check code for syntax errors, or switch to plaintext language.', 'witchfire' ) }
+						</Notice>
+					) }
 					<ComboboxControl
 						label={ __( 'Language', 'witchfire' ) }
 						value={ language }
@@ -121,17 +129,7 @@ const Edit = ( {
 					/>
 				</PanelBody>
 			</InspectorControls>
-			<div { ...blockProps }>
-				{ isHighlightedCodeDirty && (
-					<Notice status="warning" isDismissible={ false }>
-						{ __( 'Saving is temporarily blocked. Code has been updated in a WitchFire code block, but highlighted code has not been updated. Click "Update Highlighting" to apply changes.', 'witchfire' ) }
-					</Notice>
-				) }
-				{ highlightError && (
-					<Notice status="error" isDismissible={ false }>
-						{ __( 'WitchFire syntax highlighting failed. Check code for syntax errors, or switch to plaintext language.', 'witchfire' ) }
-					</Notice>
-				) }
+			<div { ...useBlockProps( { className: 'lumis' } ) }>
 				{ isPreviewEnabled
 					? <div dangerouslySetInnerHTML={ { __html: highlighted } }/>
 					: (

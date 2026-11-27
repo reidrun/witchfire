@@ -6,8 +6,13 @@
  */
 
 .wp-block-reidrun-witchfire {
+	box-sizing: border-box;
+	overflow: auto;
+
 	& > pre {
-		overflow: auto;
-		padding: 8px;
+		margin: 0;
+		padding: 0;
+		overflow: visible;
+		background: transparent;
 	}
 }
