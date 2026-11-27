@@ -15,7 +15,7 @@ import { useBlockProps } from '@wordpress/block-editor';
  *
  * @return {Element} Element to render.
  */
-export default function save({ attributes: { highlighted } }) {
+export default function save( { attributes: { highlighted } } ) {
 	return (
 		<div
 			{ ...useBlockProps.save() }

@@ -1,7 +1,7 @@
-import {useEffect, useRef, useState} from '@wordpress/element';
+import { useEffect, useRef, useState } from '@wordpress/element';
 import { useDispatch } from '@wordpress/data';
-import {BlockControls, InspectorControls, PlainText, useBlockProps} from '@wordpress/block-editor';
-import {ToolbarGroup, ToolbarButton, PanelBody, ComboboxControl} from '@wordpress/components';
+import { BlockControls, InspectorControls, PlainText, useBlockProps } from '@wordpress/block-editor';
+import { ToolbarGroup, ToolbarButton, PanelBody, ComboboxControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -11,7 +11,7 @@ import { __ } from '@wordpress/i18n';
  * @see https://www.npmjs.com/package/@wordpress/scripts#using-css
  */
 import './editor.scss';
-import {highlightCode, LANGUAGE_OPTIONS} from "./highlight";
+import { highlightCode, LANGUAGE_OPTIONS } from "./highlight";
 
 const DEBOUNCE_MS = 150;
 
@@ -23,14 +23,15 @@ const DEBOUNCE_MS = 150;
  *
  * @return {Element} Element to render.
  */
-const Edit = ({
-  clientId,
-  attributes: {
-	  code,
-	  language,
-	  highlighted},
-  setAttributes
-}) => {
+const Edit = ( {
+	clientId,
+	attributes: {
+		code,
+		language,
+		highlighted
+	},
+	setAttributes
+} ) => {
 	const [ isPreviewEnabled, setIsPreviewEnabled ] = useState( false );
 	const blockProps = useBlockProps()
 
@@ -42,16 +43,18 @@ const Edit = ({
 
 	useEffect( () => {
 		let cancelled = false;
-		const lockKey = `reidrun-witchfire-highlight-${clientId}`;
+		const lockKey = `reidrun-witchfire-highlight-${ clientId }`;
 
 		lockPostSaving?.( lockKey );
 
 		const debounce = setTimeout( () => {
 			highlightCode( code, language )
-				.then( (newHighlighted ) => {
-					if ( cancelled || newHighlighted === highlightedRef.current ) return;
+				.then( ( newHighlighted ) => {
+					if ( cancelled || newHighlighted === highlightedRef.current ) {
+						return;
+					}
 					__unstableMarkNextChangeAsNotPersistent?.();
-					setAttributes({ highlighted: newHighlighted })
+					setAttributes( { highlighted: newHighlighted } )
 				} )
 				.catch( ( e ) => {
 					console.error( '[witchfire] highlighting failed: ', e );
@@ -81,39 +84,39 @@ const Edit = ({
 			<BlockControls>
 				<ToolbarGroup>
 					<ToolbarButton
-						isPressed={!isPreviewEnabled}
-						onClick={() => setIsPreviewEnabled( false )}
+						isPressed={ !isPreviewEnabled }
+						onClick={ () => setIsPreviewEnabled( false ) }
 					>
-						{__('Edit', 'witchfire')}
+						{ __( 'Edit', 'witchfire' ) }
 					</ToolbarButton>
 					<ToolbarButton
-						isPressed={isPreviewEnabled}
-						onClick={() => setIsPreviewEnabled( true )}
+						isPressed={ isPreviewEnabled }
+						onClick={ () => setIsPreviewEnabled( true ) }
 					>
-						{__('Preview', 'witchfire')}
+						{ __( 'Preview', 'witchfire' ) }
 					</ToolbarButton>
 				</ToolbarGroup>
 			</BlockControls>
 			<InspectorControls>
-				<PanelBody title={__('Witchfire Settings', 'witchfire')}>
+				<PanelBody title={ __( 'Witchfire Settings', 'witchfire' ) }>
 					<ComboboxControl
-						label={__('Language', 'witchfire')}
-						value={language}
-						options={LANGUAGE_OPTIONS}
-						onChange={( next ) => setAttributes({ language: next ?? 'plaintext' })}
+						label={ __( 'Language', 'witchfire' ) }
+						value={ language }
+						options={ LANGUAGE_OPTIONS }
+						onChange={ ( next ) => setAttributes( { language: next ?? 'plaintext' } ) }
 					/>
 				</PanelBody>
 			</InspectorControls>
-			<div {...blockProps}>
-				{isPreviewEnabled
-					? <div dangerouslySetInnerHTML={{__html: highlighted}} />
+			<div { ...blockProps }>
+				{ isPreviewEnabled
+					? <div dangerouslySetInnerHTML={ { __html: highlighted } }/>
 					: (
 						<PlainText
-							value={code}
-							onChange={( next ) => setAttributes({ code: next })}
-							placeholder={__('Enter code here', 'witchfire')}
-							aria-label={__('Enter code here', 'witchfire')}
-							spellCheck={false}
+							value={ code }
+							onChange={ ( next ) => setAttributes( { code: next } ) }
+							placeholder={ __( 'Enter code here', 'witchfire' ) }
+							aria-label={ __( 'Enter code here', 'witchfire' ) }
+							spellCheck={ false }
 						/>
 					)
 				}

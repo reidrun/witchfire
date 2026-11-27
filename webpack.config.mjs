@@ -6,7 +6,7 @@ const config = {
 	...defaultConfig,
 	plugins: [
 		...defaultConfig.plugins,
-		new CopyPlugin({
+		new CopyPlugin( {
 			patterns: [
 				{
 					from: path.resolve( import.meta.dirname, 'node_modules/@lumis-sh/lumis/dist/web-tree-sitter.wasm' ),
@@ -22,7 +22,7 @@ const config = {
 					to: 'themes/[name][ext]',
 				},
 			],
-		}),
+		} ),
 	]
 }
 
