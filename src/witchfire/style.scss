@@ -6,7 +6,8 @@
  */
 
 .wp-block-reidrun-witchfire {
-	background-color: #21759b;
-	color: #fff;
-	padding: 2px;
+	& > pre {
+		overflow: auto;
+		padding: 8px;
+	}
 }

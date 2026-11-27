@@ -5,5 +5,10 @@
  */
 
 .wp-block-reidrun-witchfire {
-	border: 1px dotted #f00;
+	.block-editor-plain-text {
+		background-color: transparent;
+		border: 1px solid currentColor;
+		border-radius: 8px;
+		padding: 8px;
+	}
 }

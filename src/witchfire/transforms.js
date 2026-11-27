@@ -24,8 +24,8 @@ export default {
 			type: 'block',
 			blocks: [
 				'core/code',
-				'core/preformatted',
 				'core/paragraph',
+				'core/preformatted',
 			],
 			transform: ( { content } ) => {
 				return createBlock(
@@ -40,5 +40,6 @@ export default {
 	to: [
 		createBlockCodeToContent( 'core/code' ),
 		createBlockCodeToContent( 'core/paragraph' ),
+		createBlockCodeToContent( 'core/preformatted' ),
 	],
 }

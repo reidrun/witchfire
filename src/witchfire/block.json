@@ -14,7 +14,7 @@
 		},
 		"language": {
 			"type": "string",
-			"default": ""
+			"default": "plaintext"
 		},
 		"highlighted": {
 			"type": "string",
@@ -31,11 +31,6 @@
 		],
 		"anchor": true,
 		"html": false,
-		"color": {
-			"text": true,
-			"background": true,
-			"gradients": true
-		},
 		"spacing": {
 			"margin": [
 				"top",
@@ -58,6 +53,12 @@
 	},
 	"textdomain": "witchfire",
 	"editorScript": "file:./index.js",
-	"editorStyle": "file:./index.css",
-	"style": "file:./style-index.css"
+	"editorStyle": [
+		"file:./index.css",
+		"reidrun-witchfire-lumis-theme"
+	],
+	"style": [
+		"file:./style-index.css",
+		"reidrun-witchfire-lumis-theme"
+	]
 }

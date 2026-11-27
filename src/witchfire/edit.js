@@ -1,28 +1,16 @@
-import { useEffect, useRef, useState } from '@wordpress/element';
+import { useCallback, useEffect, useMemo, useState } from '@wordpress/element';
 import { useDispatch } from '@wordpress/data';
 import { BlockControls, InspectorControls, PlainText, useBlockProps } from '@wordpress/block-editor';
-import { ToolbarGroup, ToolbarButton, PanelBody, ComboboxControl } from '@wordpress/components';
+import { ToolbarGroup, ToolbarButton, PanelBody, ComboboxControl, Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-
-/**
- * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
- * Those files can contain any CSS code that gets applied to the editor.
- *
- * @see https://www.npmjs.com/package/@wordpress/scripts#using-css
- */
 import './editor.scss';
 import { highlightCode, LANGUAGE_OPTIONS } from "./highlight";
 
-const DEBOUNCE_MS = 150;
+const getTextFromHighlighted = ( highlightedCode ) => {
+	const node = new DOMParser().parseFromString( highlightedCode ?? '', 'text/html' );
+	return node.querySelector( 'pre' )?.innerText ?? node.body.textContent ?? '';
+}
 
-/**
- * The edit function describes the structure of your block in the context of the
- * editor. This represents what the editor will render when the block is used.
- *
- * @see https://developer.wordpress.org/block-editor/reference-guides/block-api/block-edit-save/#edit
- *
- * @return {Element} Element to render.
- */
 const Edit = ( {
 	clientId,
 	attributes: {
@@ -33,50 +21,67 @@ const Edit = ( {
 	setAttributes
 } ) => {
 	const [ isPreviewEnabled, setIsPreviewEnabled ] = useState( false );
+	const [ isHighlighting, setIsHighlighting ] = useState( false );
+	const [ highlightError, setHighlightError ] = useState( null );
+
 	const blockProps = useBlockProps()
 
 	const { lockPostSaving, unlockPostSaving } = useDispatch( 'core/editor' ) ?? {};
 	const { __unstableMarkNextChangeAsNotPersistent } = useDispatch( 'core/block-editor' ) ?? {};
 
-	const highlightedRef = useRef( highlighted );
-	highlightedRef.current = highlighted;
+	const highlightedCode = useMemo( () => getTextFromHighlighted( highlighted ), [ highlighted ] )
+	const isHighlightedCodeDirty = code !== highlightedCode;
 
-	useEffect( () => {
-		let cancelled = false;
-		const lockKey = `reidrun-witchfire-highlight-${ clientId }`;
-
-		lockPostSaving?.( lockKey );
-
-		const debounce = setTimeout( () => {
-			highlightCode( code, language )
-				.then( ( newHighlighted ) => {
-					if ( cancelled || newHighlighted === highlightedRef.current ) {
-						return;
-					}
-					__unstableMarkNextChangeAsNotPersistent?.();
-					setAttributes( { highlighted: newHighlighted } )
-				} )
-				.catch( ( e ) => {
-					console.error( '[witchfire] highlighting failed: ', e );
-				} )
-				.finally( () => {
-					!!cancelled || unlockPostSaving?.( lockKey );
-				} )
-		}, DEBOUNCE_MS )
-
-		return () => {
-			cancelled = true;
-			clearTimeout( debounce );
-			unlockPostSaving?.( lockKey );
+	const updateHighlighting = useCallback( async () => {
+		setIsHighlighting( true );
+		try {
+			const newHighlighted = await highlightCode( code, language );
+			__unstableMarkNextChangeAsNotPersistent?.();
+			setAttributes( { highlighted: newHighlighted } );
+			setHighlightError( null );
+			return true;
+		} catch ( e ) {
+			console.error( '[witchfire] highlighting failed:', e )
+			setHighlightError( e );
+			return false;
+		} finally {
+			setIsHighlighting( false );
 		}
 	}, [
-		clientId,
 		code,
 		language,
-		lockPostSaving,
-		unlockPostSaving,
 		__unstableMarkNextChangeAsNotPersistent,
 		setAttributes,
+	] );
+
+	const enablePreview = useCallback( async () => {
+		if ( !isHighlightedCodeDirty ) {
+			setIsPreviewEnabled( true );
+			return;
+		}
+		await updateHighlighting() && setIsPreviewEnabled( true );
+	}, [
+		isHighlightedCodeDirty,
+		updateHighlighting
+	] )
+
+	useEffect( () => {
+		const lockKey = `reidrun-witchfire-highlight-${ clientId }`;
+
+		if ( isHighlightedCodeDirty || isHighlighting ) {
+			lockPostSaving?.( lockKey );
+			return () => {
+				unlockPostSaving?.( lockKey );
+			}
+		}
+
+		unlockPostSaving?.( lockKey );
+	}, [
+		clientId,
+		lockPostSaving,
+		unlockPostSaving,
+		isHighlightedCodeDirty,
+		isHighlighting,
 	] )
 
 	return (
@@ -91,9 +96,15 @@ const Edit = ( {
 					</ToolbarButton>
 					<ToolbarButton
 						isPressed={ isPreviewEnabled }
-						onClick={ () => setIsPreviewEnabled( true ) }
+						disabled={ isHighlighting }
+						onClick={ enablePreview }
 					>
-						{ __( 'Preview', 'witchfire' ) }
+						{ isHighlighting
+							? __( 'Highlighting...', 'witchfire' )
+							: __( 'Preview', 'witchfire' ) }
+					</ToolbarButton>
+					<ToolbarButton disabled={ isHighlighting } onClick={ updateHighlighting }>
+						{ __( 'Update Highlighting', 'witchfire' ) }
 					</ToolbarButton>
 				</ToolbarGroup>
 			</BlockControls>
@@ -103,17 +114,33 @@ const Edit = ( {
 						label={ __( 'Language', 'witchfire' ) }
 						value={ language }
 						options={ LANGUAGE_OPTIONS }
-						onChange={ ( next ) => setAttributes( { language: next ?? 'plaintext' } ) }
+						onChange={ ( next ) => setAttributes( {
+							language: next ?? 'plaintext',
+							highlighted: ''
+						} ) }
 					/>
 				</PanelBody>
 			</InspectorControls>
 			<div { ...blockProps }>
+				{ isHighlightedCodeDirty && (
+					<Notice status="warning" isDismissible={ false }>
+						{ __( 'Saving is temporarily blocked. Code has been updated in a WitchFire code block, but highlighted code has not been updated. Click "Update Highlighting" to apply changes.', 'witchfire' ) }
+					</Notice>
+				) }
+				{ highlightError && (
+					<Notice status="error" isDismissible={ false }>
+						{ __( 'WitchFire syntax highlighting failed. Check code for syntax errors, or switch to plaintext language.', 'witchfire' ) }
+					</Notice>
+				) }
 				{ isPreviewEnabled
 					? <div dangerouslySetInnerHTML={ { __html: highlighted } }/>
 					: (
 						<PlainText
 							value={ code }
-							onChange={ ( next ) => setAttributes( { code: next } ) }
+							onChange={ ( next ) => setAttributes( {
+								code: next,
+								highlighted: ''
+							} ) }
 							placeholder={ __( 'Enter code here', 'witchfire' ) }
 							aria-label={ __( 'Enter code here', 'witchfire' ) }
 							spellCheck={ false }

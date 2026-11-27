@@ -1,35 +1,50 @@
-import { createHighlighter, htmlLinked } from '@lumis-sh/lumis';
+import { createHighlighter } from '@lumis-sh/lumis';
+import { htmlLinked } from '@lumis-sh/lumis/formatters';
 import { available } from '@lumis-sh/lumis/languages';
+import fullBundle from '@lumis-sh/wasm-bundle-full';
+import wgsl from '@lumis-sh/wasm-wgsl';
 
-const config = window.witchfireConfig ?? { runtimeWasmUrl: '', languages: {} };
+const languages = {
+	...fullBundle,
+	[ wgsl.id ]: wgsl,
+};
+
 const catalog = available();
 
 export const LANGUAGE_OPTIONS = [
 	{ label: 'Plain Text', value: 'plaintext' },
-	...Object.keys( config.languages )
-		.filter( ( id ) => id !== 'plaintext' )
+	...Object.keys( languages )
 		.map( ( id ) => (
 			{ value: id, label: catalog[ id ]?.name ?? id }
 		) )
 		.sort( ( l, r ) => l.label.localeCompare( r.label ) )
-]
+];
 
 let highlighterPromise;
+
 export const getHighlighter = () => {
-	highlighterPromise = highlighterPromise ?? createHighlighter( { languages: [] } );
+	highlighterPromise = highlighterPromise ?? createHighlighter( {
+		languages: [
+			fullBundle,
+			wgsl,
+		],
+	} );
+
 	return highlighterPromise;
-}
+};
 
 export const highlightCode = async ( code, language ) => {
 	const highlighter = await getHighlighter();
-	const wasm = config.languages[ language ]
+	const languageDefinition = languages[ language ];
 
-	if ( language !== 'plaintext' && wasm ) {
-		await highlighter.loadLanguage( { id: language, wasm } );
+	if ( languageDefinition ) {
+		await highlighter.loadLanguage( languageDefinition );
 	}
 
-	return highlighter.highlight( code, {
-		language: wasm ? language : 'plaintext',
-		formatter: htmlLinked(),
-	} )
-}
+	return highlighter.highlight(
+		code,
+		htmlLinked( {
+			language: languageDefinition ?? 'plaintext',
+		} )
+	);
+};

@@ -10,7 +10,7 @@ const config = {
 			patterns: [
 				{
 					from: path.resolve( import.meta.dirname, 'node_modules/@lumis-sh/lumis/dist/web-tree-sitter.wasm' ),
-					to: 'wasm/tree-sitter.wasm',
+					to: 'wasm/web-tree-sitter.wasm',
 				},
 				{
 					from: path.resolve( import.meta.dirname, 'node_modules/@lumis-sh/wasm-*/**/*.wasm' ),
