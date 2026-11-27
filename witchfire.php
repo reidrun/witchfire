@@ -12,7 +12,7 @@
  *
  * @package Reidrun
  */
-declare( strict_types = 1 );
+declare( strict_types=1 );
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -28,15 +28,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 function reidrun_witchfire_block_init(): void {
 	wp_register_block_types_from_metadata_collection( __DIR__ . '/build', __DIR__ . '/build/blocks-manifest.php' );
 }
+
 add_action( 'init', 'reidrun_witchfire_block_init' );
 
 function reidrun_witchfire_scan_wasm_source( array $source ): array {
+	// @formatter:off
 	return ( glob( $source['dir'] . '/*.wasm' ) ?: [] )
 		|> ( fn( array $files ): array => array_map( basename( ... ), $files ) )
-		|> ( fn( array $names ): array => array_filter(
-			$names,
-			fn( string $name ) => $name !== 'web-tree-sitter.wasm'
-		) )
+		|> ( fn( array $names ): array => array_filter( $names, fn( string $name ) => $name !== 'web-tree-sitter.wasm' ) )
 		|> ( fn( array $names ): array => array_combine(
 			array_map(
 				fn( string $name ): string => preg_replace(
@@ -48,6 +47,7 @@ function reidrun_witchfire_scan_wasm_source( array $source ): array {
 			),
 			array_map( fn( string $name ): string => $source['url'] . '/' . $name, $names )
 		) );
+	// @formatter:on
 }
 
 function reidrun_witchfire_get_languages(): array {
@@ -55,24 +55,20 @@ function reidrun_witchfire_get_languages(): array {
 	$sources = [
 		[
 			'path' => plugin_dir_path( __FILE__ ) . 'build/wasm',
-			'url' => plugin_dir_url( __FILE__ ) . 'build/wasm'
+			'url'  => plugin_dir_url( __FILE__ ) . 'build/wasm'
 		],
 		[
 			'path' => $uploads['basedir'] . '/witchfire/wasm',
-			'url' => $uploads['baseurl'] . '/witchfire/wasm'
+			'url'  => $uploads['baseurl'] . '/witchfire/wasm'
 		]
 	];
 
+	// @formatter:off
 	return $sources
-		|> ( fn( array $s ): array => array_filter(
-			$s,
-			fn( array $source ): bool => is_dir( $source['path'] )
-		) )
-		|> ( fn( array $s ): array => array_map(
-			reidrun_witchfire_scan_wasm_source( ... ),
-			$s
-		) )
+		|> ( fn( array $s ): array => array_filter( $s, fn( array $source ): bool => is_dir( $source['path'] ) ) )
+		|> ( fn( array $s ): array => array_map( reidrun_witchfire_scan_wasm_source( ... ), $s ) )
 		|> ( fn( array $maps ): array => array_merge( ...$maps ) );
+	// @formatter:on
 }
 
 function reidrun_witchfire_enqueue_block_editor_assets(): void {
@@ -80,9 +76,10 @@ function reidrun_witchfire_enqueue_block_editor_assets(): void {
 		'reidrun-witchfire-editor-script',
 		'window.witchfireConfig = ' . wp_json_encode( [
 			'runtimeWasmUrl' => plugin_dir_url( __FILE__ ) . 'build/wasm/web-tree-sitter.wasm',
-			'languages' => reidrun_witchfire_get_languages()
+			'languages'      => reidrun_witchfire_get_languages()
 		] ) . ';',
 		'before'
 	);
 }
+
 add_action( 'enqueue_block_editor_assets', 'reidrun_witchfire_enqueue_block_editor_assets' );
